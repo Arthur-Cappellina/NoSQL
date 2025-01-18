@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recherche de Protéines</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Base de données des protéines</h1>
+    </header>
+    <main>
+        <section>
+            <h2>Rechercher une protéine</h2>
+            <form id="search-form">
+                <label for="search-type">Type de recherche :</label>
+                <select id="search-type" name="search-type" required>
+                    <option value="id">Identifiant</option>
+                    <option value="name">Nom</option>
+                    <option value="description">Description</option>
+                </select>
+                <label for="search-input">Valeur :</label>
+                <input type="text" id="search-input" name="search-value" placeholder="Entrez la valeur de recherche" required>
+                <button type="submit">Rechercher</button>
+            </form>
+            <div id="results"></div>
+        </section>
+    </main>
+    <footer>
+        &copy; 2025 - Projet NoSQL Protein DB
+    </footer>
+    <script>
+        document.getElementById("search-form").addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            // Récupération du type de recherche et de la valeur entrée
+            const searchType = document.getElementById("search-type").value;
+            const searchValue = document.getElementById("search-input").value;
+
+            if (!searchValue) {
+                alert("Veuillez entrer une valeur pour la recherche.");
+                return;
+            }
+
+            // Requête vers le serveur avec les paramètres
+            fetch(`/query_mongodb?type=${searchType}&value=${searchValue}`)
+                .then(response => response.json())
+                .then(data => {
+                    const resultsDiv = document.getElementById("results");
+                    resultsDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                })
+                .catch(error => {
+                    console.error("Erreur lors de la recherche :", error);
+                    document.getElementById("results").innerText = "Une erreur est survenue. Veuillez réessayer.";
+                });
+        });
+    </script>
+</body>
+</html>

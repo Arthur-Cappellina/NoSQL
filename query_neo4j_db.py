@@ -1,4 +1,4 @@
-from db_utils.database_connexion import connect_to_neo4j_database
+from NoSQL.db_utils.database_connection import connect_to_neo4j_database
 
 driver = connect_to_neo4j_database()
 # Get the name of all 42 year-olds

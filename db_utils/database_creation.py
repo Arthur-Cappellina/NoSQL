@@ -1,6 +1,6 @@
 import csv
-from database_connexion import connect_to_mongo_database
-from db_utils.database_connexion import connect_to_neo4j_database
+from NoSQL.db_utils.database_connection import connect_to_mongo_database
+from NoSQL.db_utils.database_connection import connect_to_neo4j_database
 
 
 def create_mongo_database():

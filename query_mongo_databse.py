@@ -1,6 +1,6 @@
 from tqdm import tqdm
 
-from db_utils.database_connexion import connect_to_mongo_database, connect_to_neo4j_database
+from NoSQL.db_utils.database_connection import connect_to_mongo_database, connect_to_neo4j_database
 from collections import Counter
 from multiprocessing import Pool, cpu_count
 
