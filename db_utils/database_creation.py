@@ -1,6 +1,6 @@
 import csv
-from NoSQL.db_utils.database_connection import connect_to_mongo_database
-from NoSQL.db_utils.database_connection import connect_to_neo4j_database
+from db_utils.database_connection import connect_to_mongo_database
+from db_utils.database_connection import Neo4jGraph
 
 
 def create_mongo_database():
@@ -10,7 +10,7 @@ def create_mongo_database():
     # Drop the collection if it already exists
     collection.drop()
 
-    file_path = '../data/data_small.tsv'
+    file_path = 'data/data_small.tsv'
 
     # Open tsv file and create a database with the data mongoDB
     with open(file_path, 'r') as tsvfile:
@@ -42,16 +42,29 @@ def create_mongo_database():
         print("Data successfully inserted into the database.")
 
 
-def create_neo4j_database(proteins):
-    driver = connect_to_neo4j_database()
-    pass
+def create_neo4j_database(proteins_dict_similarity):
+    graph = Neo4jGraph()
+    graph.reset_graph()
 
+    # Create nodes and edges
+    nodes = []
+    edges = []
 
-def insert_proteins_into_neo4j(adjacence_matrix):
-    driver = connect_to_neo4j_database()
-    with driver.session() as session:
-        pass
+    for protein_id, similarity in proteins_dict_similarity.items():
+        # node
+        nodes.append({
+            "protein_id":  protein_id,
+            "type": "Protein"
+        })
 
+        # edges
+        for protein_id2, similarity_score in similarity.items():
+            edges.append({
+                "protein_id_1": protein_id,
+                "protein_id_2": protein_id2 ,
+                "similarity": similarity_score
+            })
 
-
-create_mongo_database()
+    print(len(edges))
+    graph.create_graph(nodes, edges)
+    return graph
