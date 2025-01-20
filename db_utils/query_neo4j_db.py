@@ -23,7 +23,7 @@ def search_protein_by_id(protein_id):
     return result
 
 
-def isolated_nodes():
+def isolated_proteins():
     graph = Neo4jGraph()
     with graph.driver.session() as session:
         query = """
@@ -33,6 +33,10 @@ def isolated_nodes():
             """
         result = session.run(query).data()
     graph.close()
-    print(len(result))
     return result
 
+
+def compute_stats_neo4j():
+    return {
+        "isolated_proteins": len(isolated_proteins())
+    }

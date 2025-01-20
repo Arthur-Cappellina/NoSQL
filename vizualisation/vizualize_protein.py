@@ -31,15 +31,13 @@ def create_graph(data, nodes_limit=Inf, show_neighbours_edges=True):
                 G.add_node(d["p3"])
                 G.add_edge(d["p2"], d["p3"], similarity=d["similarity_2"])
 
-
-
     return G
 
 
 
 
 
-def display_protein_neighbours(graph, main_protein):
+def display_protein_neighbours(graph, main_protein, open_window=False):
 
     # Convert the graph to a pandas dataframe
     df = nx.to_pandas_edgelist(graph)
@@ -75,16 +73,21 @@ def display_protein_neighbours(graph, main_protein):
         d3.D3graph.edge_properties[(row['source'], row['target'])]['label'] = round(row['similarity'], 2)
 
     # Show the graph
-    d3.D3graph.show(show_slider=False, save_button=False)
+    if not open_window:
+        html_content = d3.D3graph.show(show_slider=False, save_button=False, showfig=False, filepath=None)
+    else:
+        html_content = d3.D3graph.show(show_slider=True, save_button=False)
+
+    return html_content
 
 
 
-def display_protein(data, main_protein, nodes_limit=20, show_neighbours_edges=True):
+def display_protein(data, main_protein, nodes_limit=20, show_neighbours_edges=True, open_window=False):
     g = create_graph(data, nodes_limit=nodes_limit, show_neighbours_edges=show_neighbours_edges)
-    display_protein_neighbours(g, main_protein)
+    return display_protein_neighbours(g, main_protein, open_window=open_window)
 
 
 if __name__ == "__main__":
     MAIN_PROTEIN = "A0A0B4J2F2"
     data = search_protein_by_id(MAIN_PROTEIN)
-    display_protein(data, MAIN_PROTEIN, nodes_limit=20, show_neighbours_edges=False)
+    display_protein(data, MAIN_PROTEIN, nodes_limit=20, show_neighbours_edges=False, open_window=False)

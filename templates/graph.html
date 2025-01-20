@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recherche de Protéines</title>
+    <style>
+        /* Style pour une disposition compacte et horizontale */
+        #protein-form {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        #protein-form label {
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-right: 0.2rem;
+        }
+        #protein-form input,
+        #protein-form select,
+        #protein-form button {
+            padding: 0.4rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        #protein-form button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #protein-form button:hover {
+            background-color: #0056b3;
+        }
+        #protein-form .toggle-button {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #protein-form .toggle-button.active {
+            background-color: #007BFF;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Inclusion de la top bar et du formulaire -->
+    {% include 'partial/top_bar_and_form.html' %}
+
+
+
+</body>
+</html>

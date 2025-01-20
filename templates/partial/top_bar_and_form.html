@@ -1,0 +1,146 @@
+<header>
+    <h1>Base de données des protéines</h1>
+    <nav>
+        <a href="/">Database</a>
+        <a href="/graph" class="selected">Graph</a>
+        <a href="/stats">Stats</a>
+    </nav>
+</header>
+
+
+<main id="custom-main">
+    <section id="custom-section">
+        <form id="protein-form" class="inline-form">
+            <div class="form-group">
+                <label for="protein-id">Protein ID :</label>
+                <input type="text" id="protein-id" name="protein_id" placeholder="ID" required value="{{ protein_id }}">
+            </div>
+
+            <div class="form-group">
+                <label for="nodes-limit">Neighbours Limit :</label>
+                <input type="number" id="nodes-limit" name="nodes_limit" value="{{ nodes_limit }}">
+            </div>
+
+
+            <div class="form-group">
+                <label for="show-neighbours-edges">Display neighbours edges :</label>
+                <select id="show-neighbours-edges" name="show_neighbours_edges" required>
+                    {% if show_neighbours_edges == "true" %}
+                        <option value="true" selected>Oui</option>
+                        <option value="false"> Non</option>
+                    {% else %}
+                        <option value="true">Oui</option>
+                        <option value="false" selected> Non</option>
+                    {% endif %}
+
+
+                </select>
+            </div>
+
+            <div class="form-group">
+                <button type="submit">Afficher graphe</button>
+            </div>
+        </form>
+    </section>
+     <script>
+
+        const nodesLimitInput = document.getElementById("nodes-limit");
+        // Gestion de l'envoi du formulaire
+        document.getElementById("protein-form").addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            const proteinId = document.getElementById("protein-id").value;
+            const nodesLimit = nodesLimitInput.disabled ? "infinity" : nodesLimitInput.value;
+            const showNeighboursEdges = document.getElementById("show-neighbours-edges").value;
+
+            if (!proteinId) {
+                alert("Veuillez entrer un ID de protéine.");
+                return;
+            }
+
+            // Construire les paramètres pour la requête
+            const queryParams = new URLSearchParams({
+                protein_id: proteinId,
+                nodes_limit: nodesLimit,
+                show_neighbours_edges: showNeighboursEdges,
+            });
+
+            // Rediriger vers une nouvelle page
+            window.location.href = `/visualize_graph?${queryParams.toString()}`;
+        });
+    </script>
+</main>
+
+
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+
+<style>
+  /* Cible uniquement le formulaire avec la classe "inline-form" */
+#protein-form.inline-form {
+    display: flex !important; /* Force un affichage en ligne */
+    flex-direction: row;
+    flex-wrap: nowrap; /* Empêche les retours à la ligne */
+    align-items: center; /* Aligne les champs verticalement */
+    gap: 1rem; /* Espacement entre les éléments */
+    justify-content: center; /* Centre les éléments horizontalement */
+}
+
+#protein-form.inline-form .form-group {
+display: flex;
+flex-direction: column; /* Place le label au-dessus du champ */
+align-items: flex-start; /* Aligne le contenu à gauche */
+gap: 0.4rem; /* Espacement vertical entre le label et le champ */
+}
+
+
+/* Réduction des champs */
+#protein-form.inline-form input,
+#protein-form.inline-form select,
+#protein-form.inline-form button {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.9rem;
+    width: auto; /* Ajuste la largeur pour qu'elle s'adapte au contenu */
+}
+
+/* Labels compacts */
+#protein-form.inline-form label {
+    font-size: 0.9rem;
+    font-weight: bold;
+    margin-right: 0.5rem;
+}
+
+/* Boutons */
+#protein-form.inline-form button {
+    padding: 0.4rem 1rem;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#protein-form.inline-form button:hover {
+    background-color: #0056b3;
+}
+
+/* Positionnement du conteneur */
+#custom-main {
+    display: flex;
+    justify-content: center; /* Centre horizontalement */
+    align-items: flex-start; /* Aligne en haut */
+    padding-top: 1rem; /* Ajuste l'espacement en haut */
+    height: auto; /* Supprime l'extension verticale */
+    min-height: unset; /* Supprime toute hauteur minimale héritée */
+}
+
+#custom-section {
+    margin-top: 0 !important;
+    padding: 1rem 4rem;
+    position: relative;
+    gap: 1em;
+}
+
+</style>
+
