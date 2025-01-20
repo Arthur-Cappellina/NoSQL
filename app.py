@@ -8,6 +8,10 @@ app = Flask(__name__)
 def index():
     return render_template("index.html")
 
+@app.route("/graph", methods=["GET"])
+def graph():
+    return render_template("d3graph.html")
+
 @app.route("/query_mongodb", methods=["GET"])
 def query_mongodb():
     search_type = request.args.get("type")  # Type de recherche (id, name, description)
@@ -17,7 +21,11 @@ def query_mongodb():
     search_field_map = {
         "id": "Entry",
         "name": "Entry Name",
-        "description": "Protein names"
+        "description": "Protein names",
+        "id-name": ["Entry", "Entry Name"],
+        "id-description": ["Entry", "Protein names"],
+        "name-description": ["Entry Name", "Protein names"],
+        "id-name-description": ["Entry", "Entry Name", "Protein names"]
     }
 
     # Validation du type de recherche

@@ -1,5 +1,8 @@
 from pymongo import MongoClient
 
+def is_array(value):
+    return isinstance(value, list)
+
 from pymongo import MongoClient
 
 def get_protein_from_mongodb(field, value):
@@ -10,7 +13,16 @@ def get_protein_from_mongodb(field, value):
 
     try:
         # Recherche selon le champ
-        if field == "Protein names":
+        if is_array(field):
+            results = []
+            for f in field:
+                res = get_protein_from_mongodb(f, value)
+                if res["status"] == "success":
+                    results.append(res["data"])
+            if len(results) == 0:
+                return "Aucune protéine trouvée pour les valeurs données."
+            return {"status": "success", "data": results}
+        elif field == "Protein names":
             proteins = list(collection.find({"Protein names": {"$regex": value, "$options": "i"}}))
             for p in proteins:
                 p["_id"] = str(p["_id"])  # Conversion de l'ID MongoDB en chaîne

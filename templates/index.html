@@ -9,6 +9,10 @@
 <body>
     <header>
         <h1>Base de données des protéines</h1>
+        <nav>
+            <a href="/" class="selected">Mongo</a>
+            <a href="/graph">Graphe</a>
+        </nav>
     </header>
     <main>
         <section>
@@ -19,6 +23,10 @@
                     <option value="id">Identifiant</option>
                     <option value="name">Nom</option>
                     <option value="description">Description</option>
+                    <option value="id-name">Identifiant ou nom</option>
+                    <option value="id-description">Identifiant ou description</option>
+                    <option value="name-description">Nom ou description</option>
+                    <option value="id-name-description">Identifiant, nom ou description</option>
                 </select>
                 <label for="search-input">Valeur :</label>
                 <input type="text" id="search-input" name="search-value" placeholder="Entrez la valeur de recherche" required>
