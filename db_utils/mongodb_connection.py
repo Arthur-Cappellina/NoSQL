@@ -43,3 +43,21 @@ def get_protein_from_mongodb(field, value):
     finally:
         # Fermeture de la connexion
         client.close()
+
+def compute_stats(): 
+    client = MongoClient("mongodb://localhost:27017/")
+    db = client["database"]
+    collection = db["proteins"]
+    total_proteins = collection.count_documents({})
+    isolated_proteins = list(collection.find({
+        "$and": [
+            {"InterPro_count": {"$exists": True}},  # Champ présent
+            {"InterPro_count": 0}                  # Aucun lien ou domaine associé
+        ]
+    }))
+    return {
+        "total_proteins": total_proteins,
+        "unlabelled_proteins": collection.count_documents({"$or": [{"EC number": {"$exists": False}}, {"EC number": ""}]}),
+        "labelled_proteins": collection.count_documents({"EC number": {"$exists": True, "$ne": ""}}),
+        "isolated_proteins": isolated_proteins.count()
+    }

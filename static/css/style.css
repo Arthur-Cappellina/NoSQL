@@ -58,6 +58,11 @@ nav a.selected {
     border-bottom: 3px solid #f8f9fa;
 }
 
+canvas {
+    width: 1000px !important;
+    height: 500px !important;
+}
+
 svg {
     width: 99vw;
     height: 100vh;

@@ -1,16 +1,25 @@
 from flask import Flask, render_template, request, jsonify
-from db_utils.mongodb_connection import get_protein_from_mongodb
+from db_utils.mongodb_connection import get_protein_from_mongodb, compute_stats
 from db_utils.neo4j_connection import get_protein_from_neo4j
 
 app = Flask(__name__)
 
 @app.route("/")
 def index():
+    print(compute_stats())
     return render_template("index.html")
 
 @app.route("/graph", methods=["GET"])
 def graph():
     return render_template("d3graph.html")
+
+@app.route("/stats", methods=["GET"])
+def stats():
+    return render_template("stats.html")
+
+@app.route("/compute_stats", methods=["GET"])
+def compute_stats_route():
+    return jsonify(compute_stats())
 
 @app.route("/query_mongodb", methods=["GET"])
 def query_mongodb():

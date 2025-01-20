@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recherche de Protéines</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Base de données des protéines</h1>
+        <nav>
+            <a href="/">Mongo</a>
+            <a href="/graph">Graphe</a>
+            <a href="/stats" class="selected">Stats</a>
+        </nav>
+    </header>
+    <main>
+        <canvas id="statsChart" width="400" height="200"></canvas>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    </main>
+    <footer>
+        &copy; 2025 - Projet NoSQL Protein DB
+    </footer>
+    <script>
+        async function fetchStats() {
+            try {
+                const response = await fetch("/compute_stats");
+                if (!response.ok) {
+                    throw new Error("Erreur lors de la récupération des données.");
+                }
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error("Erreur :", error);
+                return null;
+            }
+        }
+
+        // Fonction pour afficher les données dans un bar chart
+        async function renderBarChart() {
+            const stats = await fetchStats();
+            if (!stats) {
+                return; // Quitter si les données sont indisponibles
+            }
+
+            // Extraire les données du JSON retourné
+            const labels = ["Total Proteins", "Unlabelled Proteins", "Labelled Proteins", "Isolated Proteins"];
+            const values = [
+                stats.total_proteins,
+                stats.unlabelled_proteins,
+                stats.labelled_proteins,
+                stats.isolated_proteins
+            ];
+
+            // Configuration du canvas Chart.js
+            const ctx = document.getElementById("statsChart").getContext("2d");
+
+            // Créer le bar chart
+            new Chart(ctx, {
+                type: "bar",
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: "Proteins Statistics",
+                        data: values,
+                        backgroundColor: ["#3498db", "#e74c3c", "#2ecc71", "#f39c12"],
+                        borderColor: ["#2980b9", "#c0392b", "#27ae60", "#d68910"],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: true
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Charger le chart lorsque la page est prête
+        document.addEventListener("DOMContentLoaded", renderBarChart);
+    </script>
+</body>
+</html>
