@@ -50,6 +50,7 @@ def compute_stats_route():
     results_mongo = compute_stats_mongodb()
     results_neo4j = compute_stats_neo4j()
     json_results = {**results_mongo, **results_neo4j}
+
     return jsonify(json_results)
 
 @app.route("/query_db", methods=["GET"])
@@ -80,8 +81,9 @@ def query_mongodb():
         result = get_protein_from_mongodb(search_field, search_value)
 
     elif db_type == "neo4j":
-        search_protein_by_id_with_double_neighbours(search_value)
-        pass
+        result = search_protein_by_id_with_double_neighbours(search_value)
+        return jsonify(result)
+
     else:
         return jsonify({"status": "error", "message": "Type de base de données invalide"}), 400
 

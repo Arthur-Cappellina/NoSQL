@@ -27,29 +27,79 @@ def search_protein_by_id(protein_id):
     return result
 
 
-def search_protein_by_id_with_double_neighbours(protein_id, limit=10):
+def search_protein_by_id_with_double_neighbours(protein_id, limit=99999):
     graph = Neo4jGraph()
     with graph.driver.session() as session:
         query = """
-                MATCH (p:Protein {ID: $protein_id})
-                OPTIONAL MATCH (p)-[r1]-(n1)
-                WITH p, r1, n1
-                ORDER BY n1 IS NULL, r1.similarity DESC
-                LIMIT $limit
-                OPTIONAL MATCH (n1)-[r2]-(n2)
-                WITH p, r1, n1, r2, n2
-                ORDER BY n2 IS NULL, r2.similarity DESC
-                LIMIT $limit
-                RETURN
-                  p AS protein,
-                  COLLECT({neighbor: n1, relation: r1}) AS degree_1_neighbors,
-                  COLLECT({neighbor: n2, relation: r2}) AS degree_2_neighbors
-                """
+        MATCH (p:Protein {ID: $protein_id})
+        OPTIONAL MATCH (p)-[r1]-(n1)
+        WITH p, r1, n1
+          ORDER BY r1.similarity DESC
+        WITH p, COLLECT(DISTINCT {neighbor: n1, relation: r1.similarity})[0..$limit] AS degree_1_neighbors
+        UNWIND degree_1_neighbors AS d1
+        WITH p, d1.neighbor AS n1, d1.relation AS r1_similarity, degree_1_neighbors
+        OPTIONAL MATCH (n1)-[r2]-(n2)
+        WHERE NOT n2 IN [n IN degree_1_neighbors | n.neighbor] // Exclusion des voisins de degré 1
+        WITH p, degree_1_neighbors, n1, r2, n2
+          ORDER BY r2.similarity DESC
+        WITH p, degree_1_neighbors,
+             COLLECT(DISTINCT {neighbor_1: n1, neighbor_2: n2, relation: r2.similarity})[0..$limit] AS degree_2_neighbors
+        RETURN
+          p AS protein,
+          degree_1_neighbors,
+          degree_2_neighbors
+        """
 
         result = session.run(query, protein_id=protein_id, limit=limit).data()
     graph.close()
 
-    return result
+    result = result[0] if result else None
+
+
+    ret = {}
+    main_prot, degree_1_neighbors, degree_2_neighbors = result.values()
+
+    ret['main_protein'] = {
+        "ID": main_prot["ID"],
+        "name": main_prot["name"],
+        "sequence": main_prot["sequence"],
+        "interpro": main_prot["interpro"]
+    }
+
+    ret['degree_1_neighbors'] = {}
+    for neighbor in degree_1_neighbors:
+        ret['degree_1_neighbors'][neighbor['neighbor']['ID']] = {
+            "ID": neighbor['neighbor']['ID'],
+            "name": neighbor['neighbor']['name'],
+            "sequence": neighbor['neighbor']['sequence'],
+            "interpro": neighbor['neighbor']['interpro'],
+            "edge": {
+                "from": main_prot['ID'],
+                "similarity": neighbor['relation']
+            }
+        }
+
+    ret['degree_2_neighbors'] = {}
+    for neighbor in degree_2_neighbors:
+        neighbor2_id = neighbor['neighbor_2']['ID']
+        if neighbor2_id not in ret['degree_2_neighbors']:
+            ret['degree_2_neighbors'][neighbor2_id] = {
+                "ID": neighbor2_id,
+                "name": neighbor['neighbor_2']['name'],
+                "sequence": neighbor['neighbor_2']['sequence'],
+                "interpro": neighbor['neighbor_2']['interpro'],
+                "edge": [{
+                    "from": neighbor['neighbor_1']['ID'],
+                    "similarity": neighbor['relation']
+                }]
+            }
+        else:
+            ret['degree_2_neighbors'][neighbor2_id]['edge'].append({
+                "from": neighbor['neighbor_1']['ID'],
+                "similarity": neighbor['relation']
+            })
+
+    return ret
 
 
 def isolated_proteins():
@@ -73,9 +123,6 @@ def compute_stats_neo4j():
 
 if __name__ == "__main__":
 
-    res = search_protein_by_id_with_double_neighbours("A0A0B4J2F2")[0]
-    for key, value in res.items():
-        print("------------------------------------\n" + key)
-        for key2, value2 in value.items():
-            print(key2, value2)
-        print("\n")
+    res = search_protein_by_id_with_double_neighbours("A0A0B4J2F2")
+
+    print(res)

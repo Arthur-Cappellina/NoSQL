@@ -3,44 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recherche de Protéines</title>
+    <title>Proteins Research</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
+
     <header>
-        <h1>Base de données des protéines</h1>
+        <h1>Protein Database</h1>
         <nav>
             <a href="/" class="selected">Database</a>
             <a href="/graph">Graph</a>
-            <a href="/stats">Stats</a>
+            <a href="/stats">Statistics</a>
         </nav>
     </header>
     <main>
         <section>
-            <h2>Rechercher une protéine</h2>
+            <h2>Search Protein</h2>
             <form id="search-form">
-                <label for="search-type">Type de recherche :</label>
+                <label for="search-type">Research type</label>
                 <select id="search-type" name="search-type" required>
-                    <option value="id">Identifiant</option>
-                    <option value="name">Nom</option>
+                    <option value="id">ID</option>
+                    <option value="name">Name</option>
                     <option value="description">Description</option>
-                    <option value="id-name">Identifiant ou nom</option>
-                    <option value="id-description">Identifiant ou description</option>
-                    <option value="name-description">Nom ou description</option>
-                    <option value="id-name-description">Identifiant, nom ou description</option>
+                    <option value="id-name">ID or name</option>
+                    <option value="id-description">ID ou description</option>
+                    <option value="name-description">Name or description</option>
+                    <option value="id-name-description">ID, name or description</option>
                 </select>
-                <label for="search-input">Valeur :</label>
-                <input type="text" id="search-input" name="search-value" placeholder="Entrez la valeur de recherche" required>
+                <label for="search-input">Value :</label>
+                <input type="text" id="search-input" name="search-value" placeholder="Enter research value" required>
 
-                <label for="db-choice">Base de données :</label>
+                <label for="db-choice">Database :</label>
                 <select id="db-choice" name="db-choice" required>
                     <option value="mongodb">MongoDB</option>
                     <option value="neo4j">Neo4j</option>
                 </select>
 
-                <button type="submit">Rechercher</button>
+                <button type="submit">Research</button>
             </form>
-            <div id="results"></div>
+            <div id="results" class="json-viewer"></div>
+
         </section>
     </main>
     <footer>
@@ -73,5 +75,105 @@
                 });
         });
     </script>
+
+
+
 </body>
+
+<script>
+    const dbChoice = document.getElementById("db-choice");
+    const searchType = document.getElementById("search-type");
+
+    // Fonction pour gérer le changement de base de données
+    dbChoice.addEventListener("change", function () {
+        if (dbChoice.value === "neo4j") {
+            // Forcer le champ de recherche sur "Identifiant" et le désactiver
+            searchType.value = "id";
+            searchType.disabled = true;
+        } else {
+            // Permettre de choisir d'autres options pour MongoDB
+            searchType.disabled = false;
+        }
+    });
+
+    // Initialiser le formulaire (au cas où la sélection de la base de données est déjà sur Neo4j)
+    if (dbChoice.value === "neo4j") {
+        searchType.value = "id";
+        searchType.disabled = true;
+    }
+</script>
+
+<script>
+    document.getElementById("search-form").addEventListener("submit", function(event) {
+        event.preventDefault();
+
+        // Récupération des paramètres
+        const searchType = document.getElementById("search-type").value;
+        const searchValue = document.getElementById("search-input").value;
+        const db_type = document.getElementById("db-choice").value;
+
+        if (!searchValue) {
+            alert("Veuillez entrer une valeur pour la recherche.");
+            return;
+        }
+
+        // Requête vers le serveur
+        fetch(`/query_db?type=${searchType}&value=${searchValue}&db=${db_type}`)
+            .then(response => response.json())
+            .then(data => {
+                const resultsDiv = document.getElementById("results");
+                resultsDiv.innerHTML = ""; // Clear previous results
+                renderJSON(data, resultsDiv);
+            })
+            .catch(error => {
+                console.error("Erreur lors de la recherche :", error);
+                document.getElementById("results").innerText = "Une erreur est survenue. Veuillez réessayer.";
+            });
+    });
+
+    // Fonction pour afficher un JSON interactif
+    function renderJSON(data, container) {
+        function createExpandableElement(key, value, depth = 0) {
+            const element = document.createElement("div");
+            element.style.marginLeft = `${depth * 20}px`;
+
+            if (typeof value === "object" && value !== null) {
+                const keyElement = document.createElement("span");
+                keyElement.textContent = `${key}: `;
+                keyElement.style.fontWeight = "bold";
+
+                const toggleButton = document.createElement("button");
+                toggleButton.textContent = "[+]";
+                toggleButton.style.marginRight = "5px";
+
+                const childContainer = document.createElement("div");
+                childContainer.style.display = "none";
+
+                Object.entries(value).forEach(([childKey, childValue]) => {
+                    childContainer.appendChild(createExpandableElement(childKey, childValue, depth + 1));
+                });
+
+                toggleButton.addEventListener("click", () => {
+                    if (childContainer.style.display === "none") {
+                        childContainer.style.display = "block";
+                        toggleButton.textContent = "[-]";
+                    } else {
+                        childContainer.style.display = "none";
+                        toggleButton.textContent = "[+]";
+                    }
+                });
+
+                element.appendChild(toggleButton);
+                element.appendChild(keyElement);
+                element.appendChild(childContainer);
+            } else {
+                element.textContent = `${key}: ${JSON.stringify(value)}`;
+            }
+
+            return element;
+        }
+
+        container.appendChild(createExpandableElement("root", data));
+    }
+</script>
 </html>

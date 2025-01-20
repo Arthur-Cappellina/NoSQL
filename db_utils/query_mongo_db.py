@@ -1,5 +1,6 @@
 from pymongo import MongoClient
 from db_utils.database_connection import connect_to_mongo_database
+from db_utils.query_mongo_database import hash_proteins_by_domain
 
 
 def is_array(value):
@@ -45,8 +46,13 @@ def compute_stats_mongodb():
 
     total_proteins = collection.count_documents({})
 
+    hash_proteins = hash_proteins_by_domain()
+    nb_proteins_by_interpro = {interpro: len(proteins) for interpro, proteins in hash_proteins.items()}
+    nb_proteins_by_interpro = dict(sorted(nb_proteins_by_interpro.items(), key=lambda item: item[1], reverse=True)[:50])
+
     return {
         "total_proteins": total_proteins,
         "unlabelled_proteins": collection.count_documents({"$or": [{"EC number": {"$exists": False}}, {"EC number": ""}]}),
         "labelled_proteins": collection.count_documents({"EC number": {"$exists": True, "$ne": ""}}),
+        "nb_proteins_by_interpro": nb_proteins_by_interpro
     }
