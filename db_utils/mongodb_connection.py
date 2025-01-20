@@ -1,5 +1,8 @@
 from pymongo import MongoClient
 
+def is_array(value):
+    return isinstance(value, list)
+
 from pymongo import MongoClient
 
 def get_protein_from_mongodb(field, value):
@@ -10,7 +13,16 @@ def get_protein_from_mongodb(field, value):
 
     try:
         # Recherche selon le champ
-        if field == "Protein names":
+        if is_array(field):
+            results = []
+            for f in field:
+                res = get_protein_from_mongodb(f, value)
+                if res["status"] == "success":
+                    results.append(res["data"])
+            if len(results) == 0:
+                return "Aucune protéine trouvée pour les valeurs données."
+            return {"status": "success", "data": results}
+        elif field == "Protein names":
             proteins = list(collection.find({"Protein names": {"$regex": value, "$options": "i"}}))
             for p in proteins:
                 p["_id"] = str(p["_id"])  # Conversion de l'ID MongoDB en chaîne
@@ -31,3 +43,21 @@ def get_protein_from_mongodb(field, value):
     finally:
         # Fermeture de la connexion
         client.close()
+
+def compute_stats(): 
+    client = MongoClient("mongodb://localhost:27017/")
+    db = client["database"]
+    collection = db["proteins"]
+    total_proteins = collection.count_documents({})
+    isolated_proteins = list(collection.find({
+        "$and": [
+            {"InterPro_count": {"$exists": True}},  # Champ présent
+            {"InterPro_count": 0}                  # Aucun lien ou domaine associé
+        ]
+    }))
+    return {
+        "total_proteins": total_proteins,
+        "unlabelled_proteins": collection.count_documents({"$or": [{"EC number": {"$exists": False}}, {"EC number": ""}]}),
+        "labelled_proteins": collection.count_documents({"EC number": {"$exists": True, "$ne": ""}}),
+        "isolated_proteins": isolated_proteins.count()
+    }
