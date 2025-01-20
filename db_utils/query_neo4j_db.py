@@ -1,5 +1,3 @@
-from lib2to3.pgen2.tokenize import group
-
 from db_utils.database_connection import Neo4jGraph
 
 

@@ -1,7 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 from db_utils.mongodb_connection import get_protein_from_mongodb, compute_stats
-from db_utils.neo4j_connection import get_protein_from_neo4j
-
+from db_utils.query_neo4j_db import search_protein_by_id
 app = Flask(__name__)
 
 @app.route("/")
@@ -49,7 +48,7 @@ def query_mongodb():
 @app.route("/query_neo4j", methods=["GET"])
 def query_neo4j():
     protein_id = request.args.get("protein_id")
-    result = get_protein_from_neo4j(protein_id)
+    result = search_protein_by_id(protein_id)
     return jsonify(result)
 
 if __name__ == "__main__":

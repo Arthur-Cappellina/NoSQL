@@ -59,5 +59,5 @@ def compute_stats():
         "total_proteins": total_proteins,
         "unlabelled_proteins": collection.count_documents({"$or": [{"EC number": {"$exists": False}}, {"EC number": ""}]}),
         "labelled_proteins": collection.count_documents({"EC number": {"$exists": True, "$ne": ""}}),
-        "isolated_proteins": isolated_proteins.count()
+        "isolated_proteins": len(isolated_proteins)
     }
