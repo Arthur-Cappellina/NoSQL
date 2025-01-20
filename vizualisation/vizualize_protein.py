@@ -10,13 +10,13 @@ def create_graph(data, nodes_limit=Inf, show_neighbours_edges=True):
     G = nx.Graph()
 
     # Ajouter les nœuds et les arêtes
-    G.add_node(data[0]["p1"])
+    G.add_node(data[0]["p1"], sequence=data[0]["sequence1"], interpro=data[0]["interpro1"], similarity=1)
 
     done = set()
     i = 0
     for d in data:
         p2 = d["p2"]
-        G.add_node(p2)
+        G.add_node(p2, sequence=data[0]["sequence2"], interpro=data[0]["interpro2"], similarity=round(d["similarity_1"],2))
         G.add_edge(d["p1"], p2, similarity=d["similarity_1"])
 
         if p2 not in done:
@@ -28,7 +28,6 @@ def create_graph(data, nodes_limit=Inf, show_neighbours_edges=True):
     if show_neighbours_edges:
         for d in data:
             if d["p2"] in done and d["p3"] in done:
-                G.add_node(d["p3"])
                 G.add_edge(d["p2"], d["p3"], similarity=d["similarity_2"])
 
     return G
@@ -38,11 +37,13 @@ def create_graph(data, nodes_limit=Inf, show_neighbours_edges=True):
 
 
 def display_protein_neighbours(graph, main_protein, open_window=False):
-
     # Convert the graph to a pandas dataframe
     df = nx.to_pandas_edgelist(graph)
-    df['weight'] = df['source'].apply(lambda x: 2 if x == main_protein else 1)
 
+    nodes = list(graph.nodes)
+
+    df['weight'] = df['source'].apply(lambda x: 2 if x == main_protein else 1)
+    df['similarity'] = df['similarity'].apply(lambda x: round(x, 2))
     # Initialize D3Blocks
     d3 = D3Blocks()
 
@@ -51,14 +52,24 @@ def display_protein_neighbours(graph, main_protein, open_window=False):
 
     # Customize node properties
     # For other proteins nodes
-    d3.D3graph.set_node_properties(size=10, color="#ADD8E6", fontcolor="#000000", fontsize=15)  # Default color and size
+    d3.D3graph.set_node_properties(size=10, color="#ADD8E6", fontcolor="#03368a", fontsize=15)  # Default color and size
 
-    # For main protein node
-    d3.D3graph.node_properties[main_protein]['size'] = 30  # Highlight the main protein
-    d3.D3graph.node_properties[main_protein]['fontsize'] = 20
-    d3.D3graph.node_properties[main_protein]['color'] = '#FF0000'  # Red for the main protein
-    d3.D3graph.node_properties[main_protein]['edge_color'] = '#000000'
-    d3.D3graph.node_properties[main_protein]['edge_size'] = 1
+
+
+
+    for node in nodes:
+        # For main protein node
+        if node == main_protein:
+            d3.D3graph.node_properties[node]['size'] = 30  # Highlight the main protein
+            d3.D3graph.node_properties[node]['fontsize'] = 20
+            d3.D3graph.node_properties[node]['color'] = '#FF0000'  # Red for the main protein
+            d3.D3graph.node_properties[node]['edge_color'] = '#000000'
+            d3.D3graph.node_properties[node]['edge_size'] = 1
+
+        d3.D3graph.node_properties[node]['tooltip'] = (f"ID: {node}\n\n"
+                                                        f"Similarity: {graph.nodes[node]['similarity']}\n\n"
+                                                         f"Intepro: {graph.nodes[node]['interpro']}\n\n"
+                                                         f"Sequence: {graph.nodes[node]['sequence']}")
 
 
     # Customize edge properties

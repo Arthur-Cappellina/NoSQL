@@ -38,9 +38,7 @@ def get_protein_from_mongodb(field, value):
     except Exception as e:
         # Gestion des erreurs
         return {"status": "error", "message": f"Une erreur s'est produite : {str(e)}"}
-    finally:
-        # Fermeture de la connexion
-        collection.client.close()
+
 
 def compute_stats_mongodb():
     collection = connect_to_mongo_database()

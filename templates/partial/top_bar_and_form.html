@@ -25,12 +25,12 @@
             <div class="form-group">
                 <label for="show-neighbours-edges">Display neighbours edges :</label>
                 <select id="show-neighbours-edges" name="show_neighbours_edges" required>
-                    {% if show_neighbours_edges == "true" %}
-                        <option value="true" selected>Oui</option>
-                        <option value="false"> Non</option>
+                    {% if not show_neighbours_edges == "true" %}
+                        <option value="true">Yes</option>
+                        <option value="false" selected> No</option>
                     {% else %}
-                        <option value="true">Oui</option>
-                        <option value="false" selected> Non</option>
+                        <option value="true" selected>Yes</option>
+                        <option value="false"> No</option>
                     {% endif %}
 
 
@@ -38,7 +38,7 @@
             </div>
 
             <div class="form-group">
-                <button type="submit">Afficher graphe</button>
+                <button type="submit">Display graph</button>
             </div>
         </form>
     </section>

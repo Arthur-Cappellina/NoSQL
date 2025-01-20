@@ -51,15 +51,18 @@ def create_neo4j_database(proteins_dict_similarity):
     nodes = []
     edges = []
 
-    for protein_id, similarity in proteins_dict_similarity.items():
+    for protein_id, values in proteins_dict_similarity.items():
         # node
         nodes.append({
             "protein_id":  protein_id,
-            "type": "Protein"
+            "type": "Protein",
+            "name": values["name"],
+            "sequence": values["sequence"],
+            "interpro": values["interpro"]
         })
 
         # edges
-        for protein_id2, similarity_score in similarity.items():
+        for protein_id2, similarity_score in values["similarities"].items():
             edges.append({
                 "protein_id_1": protein_id,
                 "protein_id_2": protein_id2 ,

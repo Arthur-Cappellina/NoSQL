@@ -67,7 +67,12 @@ class Neo4jGraph:
     def _load_nodes(tx, nodes, batch_size=1000):
         for i in tqdm(range(0, len(nodes), batch_size), desc="Loading nodes"):
             batch = nodes[i:i + batch_size]
-            query = "UNWIND $batch AS row CREATE (n:Protein) SET n.ID = row['protein_id'], n.type = row['type']"
+            query = ("UNWIND $batch AS row CREATE (n:Protein) SET "
+                     "n.ID = row['protein_id'], "
+                     "n.name = row['name'], "
+                     "n.type = row['type'], "
+                     "n.sequence = row['sequence'],"
+                     "n.interpro = row['interpro']")
             tx.run(query, batch=batch)
 
         print("Nodes successfully loaded.")

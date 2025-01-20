@@ -92,7 +92,7 @@ def jacard_similarity(ref_protein, domains_hash, min_threshold=0.):
 def compute_similarity_for_proteins(proteins=None):
     if proteins is None:
         connection = connect_to_mongo_database()
-        proteins = connection.aggregate([{"$project": {"Entry": 1, "InterPro": 1, "InterPro_count": 1, "_id": 0}}])
+        proteins = connection.aggregate([{"$project": {"Entry": 1, "InterPro": 1, "InterPro_count": 1, "Sequence": 1, "Entry Name": 1 , "_id": 0}}])
         proteins = list(proteins)
 
     # Hash proteins by domain for faster comparison
@@ -100,19 +100,17 @@ def compute_similarity_for_proteins(proteins=None):
 
     res = {}
     for protein in tqdm(proteins):
-        res[protein["Entry"]] = jacard_similarity(protein, domains_hash, min_threshold=0.5)
+        res[protein["Entry"]] = {
+            "name": protein["Entry Name"],
+            "similarities": jacard_similarity(protein, domains_hash, min_threshold=0.5),
+            "interpro": protein["InterPro"],
+            "sequence": protein["Sequence"]
+        }
 
     return res
 
 
+if __name__ == "__main__":
+    proteins_dict_similarity = compute_similarity_for_proteins()
 
-def similarity_to_csv(similarity_dict, node_file, relationship_file):
-    with open(node_file, 'w') as node_file, open(relationship_file, 'w') as relationship_file:
-        node_file.write("Id,Label\n")
-        relationship_file.write("Source,Target,Weight\n")
-
-        for protein, similarities in similarity_dict.items():
-            node_file.write(f"{protein},Protein\n")
-            for similar_protein, similarity in similarities.items():
-                relationship_file.write(f"{protein},{similar_protein},{similarity}\n")
-    print("CSV files successfully created.")
+    print(proteins_dict_similarity)

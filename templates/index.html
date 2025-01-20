@@ -31,6 +31,13 @@
                 </select>
                 <label for="search-input">Valeur :</label>
                 <input type="text" id="search-input" name="search-value" placeholder="Entrez la valeur de recherche" required>
+
+                <label for="db-choice">Base de données :</label>
+                <select id="db-choice" name="db-choice" required>
+                    <option value="mongodb">MongoDB</option>
+                    <option value="neo4j">Neo4j</option>
+                </select>
+
                 <button type="submit">Rechercher</button>
             </form>
             <div id="results"></div>
@@ -46,6 +53,7 @@
             // Récupération du type de recherche et de la valeur entrée
             const searchType = document.getElementById("search-type").value;
             const searchValue = document.getElementById("search-input").value;
+            const db_type = document.getElementById("db-choice").value;
 
             if (!searchValue) {
                 alert("Veuillez entrer une valeur pour la recherche.");
@@ -53,7 +61,7 @@
             }
 
             // Requête vers le serveur avec les paramètres
-            fetch(`/query_mongodb?type=${searchType}&value=${searchValue}`)
+            fetch(`/query_db?type=${searchType}&value=${searchValue}&db=${db_type}`)
                 .then(response => response.json())
                 .then(data => {
                     const resultsDiv = document.getElementById("results");
