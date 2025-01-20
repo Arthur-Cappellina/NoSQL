@@ -1,6 +1,7 @@
 import csv
 from db_utils.database_connection import connect_to_mongo_database
 from db_utils.database_connection import Neo4jGraph
+from db_utils.query_mongo_database import compute_similarity_for_proteins
 
 
 def create_mongo_database():
@@ -65,6 +66,12 @@ def create_neo4j_database(proteins_dict_similarity):
                 "similarity": similarity_score
             })
 
-    print(len(edges))
     graph.create_graph(nodes, edges)
     return graph
+
+
+if __name__ == "__main__":
+    create_mongo_database()
+    proteins_similarity = compute_similarity_for_proteins()
+    graph = create_neo4j_database(proteins_similarity)
+    print("Database creation done.")

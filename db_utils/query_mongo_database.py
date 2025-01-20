@@ -92,7 +92,7 @@ def jacard_similarity(ref_protein, domains_hash, min_threshold=0.):
 def compute_similarity_for_proteins(proteins=None):
     if proteins is None:
         connection = connect_to_mongo_database()
-        proteins = connection.aggregate([{"$sample": {"size": 20000}}, {"$project": {"Entry": 1, "InterPro": 1, "InterPro_count": 1, "_id": 0}}])
+        proteins = connection.aggregate([{"$project": {"Entry": 1, "InterPro": 1, "InterPro_count": 1, "_id": 0}}])
         proteins = list(proteins)
 
     # Hash proteins by domain for faster comparison

@@ -20,6 +20,8 @@ class Neo4jGraph:
 
     def reset_graph(self):
         with self.driver.session() as session:
+            print("Resetting graph...")
+
             # Delete all nodes and relationships
             session.run("MATCH (n) DETACH DELETE n")
 
@@ -63,7 +65,6 @@ class Neo4jGraph:
 
     @staticmethod
     def _load_nodes(tx, nodes, batch_size=1000):
-        print(nodes[0])
         for i in tqdm(range(0, len(nodes), batch_size), desc="Loading nodes"):
             batch = nodes[i:i + batch_size]
             query = "UNWIND $batch AS row CREATE (n:Protein) SET n.ID = row['protein_id'], n.type = row['type']"
@@ -79,9 +80,15 @@ class Neo4jGraph:
             query = """
             UNWIND $batch AS row
             MATCH (a:Protein {ID: row.protein_id_1}), (b:Protein {ID: row.protein_id_2})
-            MERGE (a)-[r:SIMILAR_TO]->(b)
+            MERGE (a)-[r:SIMILAR_TO]-(b)
             ON CREATE SET r.similarity = row.similarity
             """
             tx.run(query, batch=batch)
 
         print("Edges successfully loaded.")
+
+
+    def search_protein_by_id(self, protein_id):
+        with self.driver.session() as session:
+            result = session.run("MATCH (p:Protein {ID: $protein_id}) RETURN p", protein_id=protein_id).data()
+        return result
